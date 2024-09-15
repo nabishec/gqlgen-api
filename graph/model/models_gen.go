@@ -3,10 +3,10 @@
 package model
 
 type Comment struct {
-	ID     string  `json:"id"`
-	Post   *Post   `json:"post"`
-	Parent *string `json:"parent,omitempty"`
-	Text   string  `json:"text"`
+	ID     string   `json:"id"`
+	Post   *Post    `json:"post"`
+	Parent *Comment `json:"parent,omitempty"`
+	Text   string   `json:"text"`
 }
 
 type Mutation struct {
@@ -33,4 +33,7 @@ type Post struct {
 }
 
 type Query struct {
+}
+
+type Subscription struct {
 }

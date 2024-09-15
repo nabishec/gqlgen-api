@@ -9,7 +9,7 @@ type Post {
 type Comment {
   id: ID!
   post: Post!
-  parent: ID
+  parent: Comment
   text: String!
 }
 
@@ -35,3 +35,6 @@ type Mutation {
   addComment(input: NewComment!): Comment!
 }
 
+type Subscription {
+  addedComment(postId: ID!): Comment!
+}
