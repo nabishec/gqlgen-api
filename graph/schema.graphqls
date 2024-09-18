@@ -3,7 +3,7 @@ type Post {
   title: String!
   text: String!
   allowComments: Boolean!
-  comments: [Comment!]!
+  comments: CommentConnection!
 }
 
 type Comment {
@@ -15,7 +15,7 @@ type Comment {
 
 type Query {
   posts: [Post!]!
-  post(id: ID!): Post
+  post(id: ID!, first: Int, after: String): Post
 }
 
 input NewPost {
@@ -37,4 +37,19 @@ type Mutation {
 
 type Subscription {
   addedComment(postId: ID!): Comment!
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+}
+
+type CommentConnection {
+  edges: [CommentEdge!]!
+  pageInfo: PageInfo!
+}
+
+type CommentEdge {
+  node: Comment!
+  cursor: String!
 }

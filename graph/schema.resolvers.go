@@ -27,6 +27,8 @@ func (r *mutationResolver) AddPost(ctx context.Context, input model.NewPost) (*m
 }
 
 // AddComment is the resolver for the addComment field.
+const maxCommentLength int = 2000
+
 func (r *mutationResolver) AddComment(ctx context.Context, input model.NewComment) (*model.Comment, error) {
 	post, exist := r.posts[input.PostID]
 	if !exist {
@@ -35,7 +37,7 @@ func (r *mutationResolver) AddComment(ctx context.Context, input model.NewCommen
 	if !post.AllowComments {
 		return nil, errors.New("comments aren't allowed for post")
 	}
-	if len(input.Text) > 2000 {
+	if len(input.Text) > maxCommentLength {
 		return nil, errors.New("comment is too long")
 	}
 
@@ -59,8 +61,8 @@ func (r *mutationResolver) AddComment(ctx context.Context, input model.NewCommen
 
 	// subscription
 	if _, ok := r.subscribers[input.PostID]; ok {
-		for _, i := range r.subscribers[input.PostID] {
-			i <- comment
+		for _, ch := range r.subscribers[input.PostID] {
+			ch <- comment
 			// mabe error when channel is overflowing should look in feature
 			// select {
 			// case i<- comment:
@@ -73,7 +75,8 @@ func (r *mutationResolver) AddComment(ctx context.Context, input model.NewCommen
 
 	//delete if dont work
 	r.comments[input.PostID] = append(r.comments[input.PostID], comment)
-	r.posts[input.PostID].Comments = r.comments[input.PostID] // mabe mistake
+
+	//r.posts[input.PostID].Comments = r.comments[input.PostID] // added comments in post struct
 	return comment, nil
 
 }
@@ -91,13 +94,72 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 }
 
 // Post is the resolver for the post field.
-func (r *queryResolver) Post(ctx context.Context, id string) (*model.Post, error) {
+func (r *queryResolver) Post(ctx context.Context, id string, first *int, after *string) (*model.Post, error) {
 	post, exist := r.posts[id]
-	if exist {
-		return post, nil
-	} else {
+	if !exist {
 		return nil, errors.New("requested post doesn't exist")
 	}
+	// if !post.AllowComments {
+	// 	return post, nil
+	// }
+	var err error
+	post.Comments, err = r.PagintionComments(id, first, after)
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
+
+}
+
+// when we request post we must use pagination and add comments
+// Pagintion
+func (r *queryResolver) PagintionComments(id string, first *int, after *string) (*model.CommentConnection, error) {
+	var edges []*model.CommentEdge
+
+	comments, exist := r.comments[id]
+	if !exist || first == nil {
+		return &model.CommentConnection{
+			Edges: edges,
+			PageInfo: &model.PageInfo{
+				EndCursor:   nil,
+				HasNextPage: false,
+			},
+		}, nil
+	}
+
+	var startIndex = 0
+	if after != nil {
+		for i, comment := range comments {
+			if comment.ID == *after {
+				startIndex = i + 1
+			}
+		}
+	}
+	endIndex := startIndex + *first
+
+	var endCursor string
+
+	for i, length := startIndex, len(comments); i < length && i < endIndex; i++ {
+		comment := comments[i]
+		edges = append(edges, &model.CommentEdge{
+			Node:   comment,
+			Cursor: comment.ID,
+		})
+		if (i == length-1) || (i == endIndex-1) {
+			endCursor = comment.ID
+		}
+	}
+
+	var hasNextPage = endIndex < len(comments)
+
+	return &model.CommentConnection{
+		Edges: edges,
+		PageInfo: &model.PageInfo{
+			EndCursor:   &endCursor,
+			HasNextPage: hasNextPage,
+		},
+	}, nil
+
 }
 
 //END QUERY

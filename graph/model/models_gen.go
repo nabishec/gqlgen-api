@@ -9,6 +9,16 @@ type Comment struct {
 	Text   string   `json:"text"`
 }
 
+type CommentConnection struct {
+	Edges    []*CommentEdge `json:"edges"`
+	PageInfo *PageInfo      `json:"pageInfo"`
+}
+
+type CommentEdge struct {
+	Node   *Comment `json:"node"`
+	Cursor string   `json:"cursor"`
+}
+
 type Mutation struct {
 }
 
@@ -24,12 +34,17 @@ type NewPost struct {
 	AllowComments bool   `json:"allowComments"`
 }
 
+type PageInfo struct {
+	EndCursor   *string `json:"endCursor,omitempty"`
+	HasNextPage bool    `json:"hasNextPage"`
+}
+
 type Post struct {
-	ID            string     `json:"id"`
-	Title         string     `json:"title"`
-	Text          string     `json:"text"`
-	AllowComments bool       `json:"allowComments"`
-	Comments      []*Comment `json:"comments"`
+	ID            string             `json:"id"`
+	Title         string             `json:"title"`
+	Text          string             `json:"text"`
+	AllowComments bool               `json:"allowComments"`
+	Comments      *CommentConnection `json:"comments"`
 }
 
 type Query struct {
