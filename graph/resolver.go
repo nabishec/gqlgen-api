@@ -1,6 +1,6 @@
 package graph
 
-import "graphapi/graph/model"
+import "github.com/nabishec/graphapi/graph/model"
 
 // This file will not be regenerated automatically.
 //

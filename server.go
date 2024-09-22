@@ -1,10 +1,11 @@
 package main
 
 import (
-	"graphapi/graph"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/nabishec/graphapi/graph"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

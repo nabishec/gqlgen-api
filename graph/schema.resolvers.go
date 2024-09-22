@@ -7,7 +7,8 @@ package graph
 import (
 	"context"
 	"errors"
-	"graphapi/graph/model"
+
+	"github.com/nabishec/graphapi/graph/model"
 
 	"github.com/google/uuid"
 )

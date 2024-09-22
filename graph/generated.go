@@ -8,7 +8,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"graphapi/graph/model"
+	"github.com/nabishec/graphapi/graph/model"
 	"io"
 	"strconv"
 	"sync"
