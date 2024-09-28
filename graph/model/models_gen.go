@@ -3,10 +3,10 @@
 package model
 
 type Comment struct {
-	ID     string   `json:"id"`
-	Post   *Post    `json:"post"`
-	Parent *Comment `json:"parent,omitempty"`
-	Text   string   `json:"text"`
+	ID      string   `json:"id"`
+	Post    *Post    `json:"post"`
+	Parent  *Comment `json:"parent,omitempty"`
+	Content string   `json:"content"`
 }
 
 type CommentConnection struct {
@@ -25,12 +25,12 @@ type Mutation struct {
 type NewComment struct {
 	PostID   string  `json:"postId"`
 	ParentID *string `json:"parentId,omitempty"`
-	Text     string  `json:"text"`
+	Content  string  `json:"content"`
 }
 
 type NewPost struct {
 	Title         string `json:"title"`
-	Text          string `json:"text"`
+	Content       string `json:"content"`
 	AllowComments bool   `json:"allowComments"`
 }
 
@@ -42,7 +42,7 @@ type PageInfo struct {
 type Post struct {
 	ID            string             `json:"id"`
 	Title         string             `json:"title"`
-	Text          string             `json:"text"`
+	Content       string             `json:"content"`
 	AllowComments bool               `json:"allowComments"`
 	Comments      *CommentConnection `json:"comments"`
 }

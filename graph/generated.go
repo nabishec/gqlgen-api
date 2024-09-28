@@ -8,7 +8,6 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"github.com/nabishec/graphapi/graph/model"
 	"io"
 	"strconv"
 	"sync"
@@ -16,6 +15,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/nabishec/graphapi/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -50,10 +50,10 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Comment struct {
-		ID     func(childComplexity int) int
-		Parent func(childComplexity int) int
-		Post   func(childComplexity int) int
-		Text   func(childComplexity int) int
+		Content func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Parent  func(childComplexity int) int
+		Post    func(childComplexity int) int
 	}
 
 	CommentConnection struct {
@@ -79,8 +79,8 @@ type ComplexityRoot struct {
 	Post struct {
 		AllowComments func(childComplexity int) int
 		Comments      func(childComplexity int) int
+		Content       func(childComplexity int) int
 		ID            func(childComplexity int) int
-		Text          func(childComplexity int) int
 		Title         func(childComplexity int) int
 	}
 
@@ -125,6 +125,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Comment.content":
+		if e.complexity.Comment.Content == nil {
+			break
+		}
+
+		return e.complexity.Comment.Content(childComplexity), true
+
 	case "Comment.id":
 		if e.complexity.Comment.ID == nil {
 			break
@@ -145,13 +152,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Comment.Post(childComplexity), true
-
-	case "Comment.text":
-		if e.complexity.Comment.Text == nil {
-			break
-		}
-
-		return e.complexity.Comment.Text(childComplexity), true
 
 	case "CommentConnection.edges":
 		if e.complexity.CommentConnection.Edges == nil {
@@ -233,19 +233,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.Comments(childComplexity), true
 
+	case "Post.content":
+		if e.complexity.Post.Content == nil {
+			break
+		}
+
+		return e.complexity.Post.Content(childComplexity), true
+
 	case "Post.id":
 		if e.complexity.Post.ID == nil {
 			break
 		}
 
 		return e.complexity.Post.ID(childComplexity), true
-
-	case "Post.text":
-		if e.complexity.Post.Text == nil {
-			break
-		}
-
-		return e.complexity.Post.Text(childComplexity), true
 
 	case "Post.title":
 		if e.complexity.Post.Title == nil {
@@ -434,7 +434,7 @@ func (ec *executionContext) field_Mutation_addComment_args(ctx context.Context, 
 	var arg0 model.NewComment
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewComment2graphapiᚋgraphᚋmodelᚐNewComment(ctx, tmp)
+		arg0, err = ec.unmarshalNNewComment2githubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐNewComment(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -449,7 +449,7 @@ func (ec *executionContext) field_Mutation_addPost_args(ctx context.Context, raw
 	var arg0 model.NewPost
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewPost2graphapiᚋgraphᚋmodelᚐNewPost(ctx, tmp)
+		arg0, err = ec.unmarshalNNewPost2githubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐNewPost(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -631,7 +631,7 @@ func (ec *executionContext) _Comment_post(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*model.Post)
 	fc.Result = res
-	return ec.marshalNPost2ᚖgraphapiᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
+	return ec.marshalNPost2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Comment_post(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -646,8 +646,8 @@ func (ec *executionContext) fieldContext_Comment_post(_ context.Context, field g
 				return ec.fieldContext_Post_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Post_title(ctx, field)
-			case "text":
-				return ec.fieldContext_Post_text(ctx, field)
+			case "content":
+				return ec.fieldContext_Post_content(ctx, field)
 			case "allowComments":
 				return ec.fieldContext_Post_allowComments(ctx, field)
 			case "comments":
@@ -684,7 +684,7 @@ func (ec *executionContext) _Comment_parent(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.Comment)
 	fc.Result = res
-	return ec.marshalOComment2ᚖgraphapiᚋgraphᚋmodelᚐComment(ctx, field.Selections, res)
+	return ec.marshalOComment2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐComment(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Comment_parent(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -701,8 +701,8 @@ func (ec *executionContext) fieldContext_Comment_parent(_ context.Context, field
 				return ec.fieldContext_Comment_post(ctx, field)
 			case "parent":
 				return ec.fieldContext_Comment_parent(ctx, field)
-			case "text":
-				return ec.fieldContext_Comment_text(ctx, field)
+			case "content":
+				return ec.fieldContext_Comment_content(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
 		},
@@ -710,8 +710,8 @@ func (ec *executionContext) fieldContext_Comment_parent(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Comment_text(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Comment_text(ctx, field)
+func (ec *executionContext) _Comment_content(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Comment_content(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -724,7 +724,7 @@ func (ec *executionContext) _Comment_text(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Text, nil
+		return obj.Content, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -741,7 +741,7 @@ func (ec *executionContext) _Comment_text(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Comment_text(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Comment_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Comment",
 		Field:      field,
@@ -782,7 +782,7 @@ func (ec *executionContext) _CommentConnection_edges(ctx context.Context, field 
 	}
 	res := resTmp.([]*model.CommentEdge)
 	fc.Result = res
-	return ec.marshalNCommentEdge2ᚕᚖgraphapiᚋgraphᚋmodelᚐCommentEdgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNCommentEdge2ᚕᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐCommentEdgeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CommentConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -832,7 +832,7 @@ func (ec *executionContext) _CommentConnection_pageInfo(ctx context.Context, fie
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgraphapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CommentConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -882,7 +882,7 @@ func (ec *executionContext) _CommentEdge_node(ctx context.Context, field graphql
 	}
 	res := resTmp.(*model.Comment)
 	fc.Result = res
-	return ec.marshalNComment2ᚖgraphapiᚋgraphᚋmodelᚐComment(ctx, field.Selections, res)
+	return ec.marshalNComment2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐComment(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_CommentEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -899,8 +899,8 @@ func (ec *executionContext) fieldContext_CommentEdge_node(_ context.Context, fie
 				return ec.fieldContext_Comment_post(ctx, field)
 			case "parent":
 				return ec.fieldContext_Comment_parent(ctx, field)
-			case "text":
-				return ec.fieldContext_Comment_text(ctx, field)
+			case "content":
+				return ec.fieldContext_Comment_content(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
 		},
@@ -980,7 +980,7 @@ func (ec *executionContext) _Mutation_addPost(ctx context.Context, field graphql
 	}
 	res := resTmp.(*model.Post)
 	fc.Result = res
-	return ec.marshalNPost2ᚖgraphapiᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
+	return ec.marshalNPost2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_addPost(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -995,8 +995,8 @@ func (ec *executionContext) fieldContext_Mutation_addPost(ctx context.Context, f
 				return ec.fieldContext_Post_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Post_title(ctx, field)
-			case "text":
-				return ec.fieldContext_Post_text(ctx, field)
+			case "content":
+				return ec.fieldContext_Post_content(ctx, field)
 			case "allowComments":
 				return ec.fieldContext_Post_allowComments(ctx, field)
 			case "comments":
@@ -1047,7 +1047,7 @@ func (ec *executionContext) _Mutation_addComment(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Comment)
 	fc.Result = res
-	return ec.marshalNComment2ᚖgraphapiᚋgraphᚋmodelᚐComment(ctx, field.Selections, res)
+	return ec.marshalNComment2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐComment(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_addComment(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1064,8 +1064,8 @@ func (ec *executionContext) fieldContext_Mutation_addComment(ctx context.Context
 				return ec.fieldContext_Comment_post(ctx, field)
 			case "parent":
 				return ec.fieldContext_Comment_parent(ctx, field)
-			case "text":
-				return ec.fieldContext_Comment_text(ctx, field)
+			case "content":
+				return ec.fieldContext_Comment_content(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
 		},
@@ -1257,8 +1257,8 @@ func (ec *executionContext) fieldContext_Post_title(_ context.Context, field gra
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_text(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Post_text(ctx, field)
+func (ec *executionContext) _Post_content(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Post_content(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1271,7 +1271,7 @@ func (ec *executionContext) _Post_text(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Text, nil
+		return obj.Content, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1288,7 +1288,7 @@ func (ec *executionContext) _Post_text(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Post_text(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Post_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Post",
 		Field:      field,
@@ -1373,7 +1373,7 @@ func (ec *executionContext) _Post_comments(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*model.CommentConnection)
 	fc.Result = res
-	return ec.marshalNCommentConnection2ᚖgraphapiᚋgraphᚋmodelᚐCommentConnection(ctx, field.Selections, res)
+	return ec.marshalNCommentConnection2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐCommentConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Post_comments(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1423,7 +1423,7 @@ func (ec *executionContext) _Query_posts(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*model.Post)
 	fc.Result = res
-	return ec.marshalNPost2ᚕᚖgraphapiᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
+	return ec.marshalNPost2ᚕᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_posts(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1438,8 +1438,8 @@ func (ec *executionContext) fieldContext_Query_posts(_ context.Context, field gr
 				return ec.fieldContext_Post_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Post_title(ctx, field)
-			case "text":
-				return ec.fieldContext_Post_text(ctx, field)
+			case "content":
+				return ec.fieldContext_Post_content(ctx, field)
 			case "allowComments":
 				return ec.fieldContext_Post_allowComments(ctx, field)
 			case "comments":
@@ -1476,7 +1476,7 @@ func (ec *executionContext) _Query_post(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*model.Post)
 	fc.Result = res
-	return ec.marshalOPost2ᚖgraphapiᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
+	return ec.marshalOPost2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPost(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_post(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1491,8 +1491,8 @@ func (ec *executionContext) fieldContext_Query_post(ctx context.Context, field g
 				return ec.fieldContext_Post_id(ctx, field)
 			case "title":
 				return ec.fieldContext_Post_title(ctx, field)
-			case "text":
-				return ec.fieldContext_Post_text(ctx, field)
+			case "content":
+				return ec.fieldContext_Post_content(ctx, field)
 			case "allowComments":
 				return ec.fieldContext_Post_allowComments(ctx, field)
 			case "comments":
@@ -1680,7 +1680,7 @@ func (ec *executionContext) _Subscription_addedComment(ctx context.Context, fiel
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNComment2ᚖgraphapiᚋgraphᚋmodelᚐComment(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNComment2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐComment(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -1703,8 +1703,8 @@ func (ec *executionContext) fieldContext_Subscription_addedComment(ctx context.C
 				return ec.fieldContext_Comment_post(ctx, field)
 			case "parent":
 				return ec.fieldContext_Comment_parent(ctx, field)
-			case "text":
-				return ec.fieldContext_Comment_text(ctx, field)
+			case "content":
+				return ec.fieldContext_Comment_content(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
 		},
@@ -3503,7 +3503,7 @@ func (ec *executionContext) unmarshalInputNewComment(ctx context.Context, obj in
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"postId", "parentId", "text"}
+	fieldsInOrder := [...]string{"postId", "parentId", "content"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3524,13 +3524,13 @@ func (ec *executionContext) unmarshalInputNewComment(ctx context.Context, obj in
 				return it, err
 			}
 			it.ParentID = data
-		case "text":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+		case "content":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Text = data
+			it.Content = data
 		}
 	}
 
@@ -3544,7 +3544,7 @@ func (ec *executionContext) unmarshalInputNewPost(ctx context.Context, obj inter
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "text", "allowComments"}
+	fieldsInOrder := [...]string{"title", "content", "allowComments"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3558,13 +3558,13 @@ func (ec *executionContext) unmarshalInputNewPost(ctx context.Context, obj inter
 				return it, err
 			}
 			it.Title = data
-		case "text":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+		case "content":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Text = data
+			it.Content = data
 		case "allowComments":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("allowComments"))
 			data, err := ec.unmarshalNBoolean2bool(ctx, v)
@@ -3609,8 +3609,8 @@ func (ec *executionContext) _Comment(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "parent":
 			out.Values[i] = ec._Comment_parent(ctx, field, obj)
-		case "text":
-			out.Values[i] = ec._Comment_text(ctx, field, obj)
+		case "content":
+			out.Values[i] = ec._Comment_content(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -3843,8 +3843,8 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "text":
-			out.Values[i] = ec._Post_text(ctx, field, obj)
+		case "content":
+			out.Values[i] = ec._Post_content(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4333,11 +4333,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNComment2graphapiᚋgraphᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v model.Comment) graphql.Marshaler {
+func (ec *executionContext) marshalNComment2githubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v model.Comment) graphql.Marshaler {
 	return ec._Comment(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNComment2ᚖgraphapiᚋgraphᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v *model.Comment) graphql.Marshaler {
+func (ec *executionContext) marshalNComment2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v *model.Comment) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4347,7 +4347,7 @@ func (ec *executionContext) marshalNComment2ᚖgraphapiᚋgraphᚋmodelᚐCommen
 	return ec._Comment(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCommentConnection2ᚖgraphapiᚋgraphᚋmodelᚐCommentConnection(ctx context.Context, sel ast.SelectionSet, v *model.CommentConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNCommentConnection2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐCommentConnection(ctx context.Context, sel ast.SelectionSet, v *model.CommentConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4357,7 +4357,7 @@ func (ec *executionContext) marshalNCommentConnection2ᚖgraphapiᚋgraphᚋmode
 	return ec._CommentConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCommentEdge2ᚕᚖgraphapiᚋgraphᚋmodelᚐCommentEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CommentEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNCommentEdge2ᚕᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐCommentEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CommentEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4381,7 +4381,7 @@ func (ec *executionContext) marshalNCommentEdge2ᚕᚖgraphapiᚋgraphᚋmodel�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCommentEdge2ᚖgraphapiᚋgraphᚋmodelᚐCommentEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNCommentEdge2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐCommentEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4401,7 +4401,7 @@ func (ec *executionContext) marshalNCommentEdge2ᚕᚖgraphapiᚋgraphᚋmodel�
 	return ret
 }
 
-func (ec *executionContext) marshalNCommentEdge2ᚖgraphapiᚋgraphᚋmodelᚐCommentEdge(ctx context.Context, sel ast.SelectionSet, v *model.CommentEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNCommentEdge2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐCommentEdge(ctx context.Context, sel ast.SelectionSet, v *model.CommentEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4426,17 +4426,17 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewComment2graphapiᚋgraphᚋmodelᚐNewComment(ctx context.Context, v interface{}) (model.NewComment, error) {
+func (ec *executionContext) unmarshalNNewComment2githubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐNewComment(ctx context.Context, v interface{}) (model.NewComment, error) {
 	res, err := ec.unmarshalInputNewComment(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNNewPost2graphapiᚋgraphᚋmodelᚐNewPost(ctx context.Context, v interface{}) (model.NewPost, error) {
+func (ec *executionContext) unmarshalNNewPost2githubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐNewPost(ctx context.Context, v interface{}) (model.NewPost, error) {
 	res, err := ec.unmarshalInputNewPost(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNPageInfo2ᚖgraphapiᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4446,11 +4446,11 @@ func (ec *executionContext) marshalNPageInfo2ᚖgraphapiᚋgraphᚋmodelᚐPageI
 	return ec._PageInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPost2graphapiᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v model.Post) graphql.Marshaler {
+func (ec *executionContext) marshalNPost2githubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v model.Post) graphql.Marshaler {
 	return ec._Post(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPost2ᚕᚖgraphapiᚋgraphᚋmodelᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Post) graphql.Marshaler {
+func (ec *executionContext) marshalNPost2ᚕᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Post) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4474,7 +4474,7 @@ func (ec *executionContext) marshalNPost2ᚕᚖgraphapiᚋgraphᚋmodelᚐPost�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPost2ᚖgraphapiᚋgraphᚋmodelᚐPost(ctx, sel, v[i])
+			ret[i] = ec.marshalNPost2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPost(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4494,7 +4494,7 @@ func (ec *executionContext) marshalNPost2ᚕᚖgraphapiᚋgraphᚋmodelᚐPost�
 	return ret
 }
 
-func (ec *executionContext) marshalNPost2ᚖgraphapiᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *model.Post) graphql.Marshaler {
+func (ec *executionContext) marshalNPost2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *model.Post) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4798,7 +4798,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOComment2ᚖgraphapiᚋgraphᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v *model.Comment) graphql.Marshaler {
+func (ec *executionContext) marshalOComment2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v *model.Comment) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4837,7 +4837,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalOPost2ᚖgraphapiᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *model.Post) graphql.Marshaler {
+func (ec *executionContext) marshalOPost2ᚖgithubᚗcomᚋnabishecᚋgraphapiᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *model.Post) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
